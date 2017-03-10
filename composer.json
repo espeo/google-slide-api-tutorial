@@ -1,0 +1,14 @@
+{
+    "name": "espeo/google-slides-api-test",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Krzysztof Wedrowicz",
+            "email": "krzysztof.wedrowicz@espeo.eu"
+        }
+    ],
+    "require": {
+        "google/apiclient-services": "dev-master",
+        "google/apiclient": "^2.0"
+    }
+}
