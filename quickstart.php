@@ -2,7 +2,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 define('APPLICATION_NAME', 'Espeo Google Slides Generating');
-define('CREDENTIALS_PATH', '~/.credentials/slides.googleapis.com-php-quickstart.json');
+define('CREDENTIALS_PATH', '~/.credentials/espeo.google-slide-api-tutorial.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/slides.googleapis.com-php-quickstart.json
@@ -70,5 +70,97 @@ function expandHomeDirectory($path) {
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
+function clonePresentationWithName(Google_Service_Drive $driveService, $copy_name){
+    $response = $driveService->files->listFiles(array(
+        'q' => "mimeType='application/vnd.google-apps.presentation' and name='Espeo template'",
+        'spaces' => 'drive',
+        'fields' => 'files(id, name)',
+    ));
+    if($response->files){
+        $templatePresentationId = $response->files[0]->id;
+    } else {
+        throw new Exception("Template presentation not found");
+    }
+
+    $copy = new Google_Service_Drive_DriveFile(array(
+        'name' => $copy_name
+    ));
+    $driveResponse = $driveService->files->copy($templatePresentationId, $copy);
+    return $driveResponse->id;
+}
+
+function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests){
+    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
+        'requests' => $requests
+    ));
+
+    $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
+}
+
+function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null){
+
+    $file = new Google_Service_Drive_DriveFile(array(
+        'name' => $name ? $name : basename($imagePath),
+        'mimeType' => image_type_to_mime_type(exif_imagetype($imagePath))
+    ));
+    $params = array(
+        'data' => file_get_contents($imagePath),
+        'uploadType' => 'media',
+    );
+    $upload = $driveService->files->create($file, $params);
+    $fileId = $upload->id;
+
+    $token = $driveService->getClient()->getAccessToken()['access_token'];
+    $endPoint = 'https://www.googleapis.com/drive/v3/files';
+    $imageUrl = sprintf('%s/%s?alt=media&access_token=%s', $endPoint, $fileId, $token);
+    return $imageUrl;
+}
+
+function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
+    $response = $driveService->files->export($presentationId, 'application/pdf');
+    $content = $response->getBody();
+    file_put_contents('./pdf/result.pdf', $content);
+}
+
 $client = getClient();
-$service = new Google_Service_Slides($client);
+$driveService = new Google_Service_Drive($client);
+$slidesService = new Google_Service_Slides($client);
+
+$presentationId = clonePresentationWithName($driveService, 'copy_name');
+$imageUrl = uploadImage($driveService, './images/espeo.png');
+
+$requests = array();
+
+$requests[] = new Google_Service_Slides_Request(array(
+    'replaceAllText' => array (
+        'containsText' => array(
+            'text' => '{{ product_name }}',
+            'matchCase' =>  true,
+        ),
+        'replaceText' => 'Awesome name'
+    )
+));
+
+$requests[] = new Google_Service_Slides_Request(array(
+    'replaceAllText' => array (
+        'containsText' => array(
+            'text' => '{{ product_description }}',
+            'matchCase' =>  true,
+        ),
+        'replaceText' => 'Some description'
+    )
+));
+
+$requests[] = new Google_Service_Slides_Request(array(
+    'replaceAllShapesWithImage' => array (
+        'containsText' => array(
+            'text' => '{{ image }}',
+            'matchCase' =>  true,
+        ),
+        'imageUrl' => $imageUrl,
+        'replaceMethod' => 'CENTER_INSIDE',
+    )
+));
+
+batchUpdate($slidesService, $presentationId, $requests);
+downloadAsPdf($driveService, $presentationId);
