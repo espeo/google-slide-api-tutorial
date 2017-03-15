@@ -5,6 +5,7 @@ define('APPLICATION_NAME', 'Espeo Google Slides Generator');
 define('CREDENTIALS_PATH', '~/.credentials/espeo.google-slide-api-tutorial.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 define('TEMPLATE_NAME', 'Espeo template');
+define('DRIVE_API_FILES_ENDPOINT', 'https://www.googleapis.com/drive/v3/files');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/espeo.google-slide-api-tutorial.json
 define('SCOPES', [
@@ -117,8 +118,7 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     $fileId = $upload->id;
 
     $token = $driveService->getClient()->getAccessToken()['access_token'];
-    $endPoint = 'https://www.googleapis.com/drive/v3/files';
-    $imageUrl = sprintf('%s/%s?alt=media&access_token=%s', $endPoint, $fileId, $token);
+    $imageUrl = sprintf('%s/%s?alt=media&access_token=%s', DRIVE_API_FILES_ENDPOINT, $fileId, $token);
 
     return $imageUrl;
 }
