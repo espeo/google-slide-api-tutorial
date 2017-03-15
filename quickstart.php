@@ -7,12 +7,12 @@ define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 define('TEMPLATE_NAME', 'Espeo template');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/espeo.google-slide-api-tutorial.json
-define('SCOPES', implode(' ', array(
+define('SCOPES', implode(' ', [
         Google_Service_Slides::PRESENTATIONS,
-        Google_Service_Slides::DRIVE)
+        Google_Service_Slides::DRIVE ]
 ));
 
-if (php_sapi_name() != 'cli') {
+if (php_sapi_name() !== 'cli') {
     throw new Exception('This application must be run on the command line.');
 }
 
@@ -34,7 +34,7 @@ function getClient() {
     } else {
         // Request authorization from the user.
         $authUrl = $client->createAuthUrl();
-        printf("Open the following link in your browser:\n%s\n", $authUrl);
+        printf('Open the following link in your browser:\n%s\n', $authUrl);
         print 'Enter verification code: ';
         $authCode = trim(fgets(STDIN));
 
@@ -50,7 +50,7 @@ function getClient() {
             mkdir(dirname($credentialsPath), 0700, true);
         }
         file_put_contents($credentialsPath, json_encode($accessToken));
-        printf("Credentials saved to %s\n", $credentialsPath);
+        printf('Credentials saved to %s\n', $credentialsPath);
     }
 
     $client->setAccessToken($accessToken);
@@ -77,34 +77,34 @@ function expandHomeDirectory($path) {
 }
 
 function clonePresentationWithName(Google_Service_Drive $driveService, $copy_name){
-    $response = $driveService->files->listFiles(array(
+    $response = $driveService->files->listFiles([
         'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
         'spaces' => 'drive',
         'fields' => 'files(id, name)',
-    ));
+    ]);
     if($response->files){
         $templatePresentationId = $response->files[0]->id;
     } else {
         throw new Exception("Template presentation not found");
     }
 
-    $copy = new Google_Service_Drive_DriveFile(array(
+    $copy = new Google_Service_Drive_DriveFile([
         'name' => $copy_name
-    ));
+    ]);
     $driveResponse = $driveService->files->copy($templatePresentationId, $copy);
     return $driveResponse->id;
 }
 
 function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null){
 
-    $file = new Google_Service_Drive_DriveFile(array(
+    $file = new Google_Service_Drive_DriveFile([
         'name' => $name ? $name : basename($imagePath),
         'mimeType' => image_type_to_mime_type(exif_imagetype($imagePath))
-    ));
-    $params = array(
+    ]);
+    $params = [
         'data' => file_get_contents($imagePath),
         'uploadType' => 'media',
-    );
+    ];
     $upload = $driveService->files->create($file, $params);
     $fileId = $upload->id;
 
@@ -115,40 +115,40 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
 }
 
 function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests){
-    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
+    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
         'requests' => $requests
-    ));
+    ]);
 
     $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
 }
 
 function requestReplaceText($placeholder, $replacement){
-    return new Google_Service_Slides_Request(array(
-        'replaceAllText' => array (
-            'containsText' => array(
+    return new Google_Service_Slides_Request([
+        'replaceAllText' => [
+            'containsText' => [
                 'text' => $placeholder,
                 'matchCase' =>  true,
-            ),
+            ],
             'replaceText' => $replacement
-        )
-    ));
+        ]
+    ]);
 }
 
 function requestReplaceShapesWithImage($shapeText, $imageUrl){
-    return new Google_Service_Slides_Request(array(
-        'replaceAllShapesWithImage' => array (
-            'containsText' => array(
+    return new Google_Service_Slides_Request([
+        'replaceAllShapesWithImage' => [
+            'containsText' => [
                 'text' => $shapeText,
                 'matchCase' =>  true,
-            ),
+            ],
             'imageUrl' => $imageUrl,
             'replaceMethod' => 'CENTER_INSIDE',
-        )
-    ));
+        ]
+    ]);
 }
 
 function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl){
-    $requests = array();
+    $requests = [];
 
     $requests[] = requestReplaceText('{{ product_name }}', 'Awesome name');
     $requests[] = requestReplaceText('{{ product_description }}', 'Some description');
