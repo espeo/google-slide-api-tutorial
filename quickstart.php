@@ -81,7 +81,7 @@ function getClient()
 function expandHomeDirectory($path)
 {
     $homeDirectory = getenv('HOME');
-    if ($homeDirectory !== false) {
+    if ($homeDirectory === false) {
         $homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
     }
 
