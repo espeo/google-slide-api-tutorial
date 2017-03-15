@@ -83,7 +83,7 @@ function expandHomeDirectory($path) {
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
-function clonePresentationWithName(Google_Service_Drive $driveService, $copy_name){
+function clonePresentationWithName(Google_Service_Drive $driveService, $copyName){
     $response = $driveService->files->listFiles([
         'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
         'spaces' => 'drive',
@@ -96,7 +96,7 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copy_nam
     }
 
     $copy = new Google_Service_Drive_DriveFile([
-        'name' => $copy_name
+        'name' => $copyName
     ]);
     $driveResponse = $driveService->files->copy($templatePresentationId, $copy);
 
