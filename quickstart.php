@@ -34,7 +34,7 @@ function getClient()
     $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
     if (file_exists($credentialsPath)) {
         if (file_get_contents($credentialsPath) === false){
-            throw new Exception("Cannot get file contents!");
+            throw new Exception('Cannot get file contents!');
         }
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
     } else {
