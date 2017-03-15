@@ -122,39 +122,37 @@ function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $req
     $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
 }
 
-function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl){
-    $requests = array();
-
-    $requests[] = new Google_Service_Slides_Request(array(
+function requestReplaceText($placeholder, $replacement){
+    return new Google_Service_Slides_Request(array(
         'replaceAllText' => array (
             'containsText' => array(
-                'text' => '{{ product_name }}',
+                'text' => $placeholder,
                 'matchCase' =>  true,
             ),
-            'replaceText' => 'Awesome name'
+            'replaceText' => $replacement
         )
     ));
+}
 
-    $requests[] = new Google_Service_Slides_Request(array(
-        'replaceAllText' => array (
-            'containsText' => array(
-                'text' => '{{ product_description }}',
-                'matchCase' =>  true,
-            ),
-            'replaceText' => 'Some description'
-        )
-    ));
-
-    $requests[] = new Google_Service_Slides_Request(array(
+function requestReplaceShapesWithImage($shapeText, $imageUrl){
+    return new Google_Service_Slides_Request(array(
         'replaceAllShapesWithImage' => array (
             'containsText' => array(
-                'text' => '{{ image }}',
+                'text' => $shapeText,
                 'matchCase' =>  true,
             ),
             'imageUrl' => $imageUrl,
             'replaceMethod' => 'CENTER_INSIDE',
         )
     ));
+}
+
+function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl){
+    $requests = array();
+
+    $requests[] = requestReplaceText('{{ product_name }}', 'Awesome name');
+    $requests[] = requestReplaceText('{{ product_description }}', 'Some description');
+    $requests[] = requestReplaceShapesWithImage('{{ image }}', $imageUrl);
 
     batchUpdate($slidesService, $presentationId, $requests);
 }
