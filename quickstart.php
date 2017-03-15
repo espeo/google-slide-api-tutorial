@@ -32,8 +32,9 @@ function getClient() {
     // Load previously authorized credentials from a file.
     $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
     if (file_exists($credentialsPath)) {
-        if (file_get_contents($credentialsPath) === false)
+        if (file_get_contents($credentialsPath) === false){
             throw new Exception("Cannot get file contents!");
+        }
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
     } else {
         // Request authorization from the user.
@@ -53,8 +54,9 @@ function getClient() {
         if(!file_exists(dirname($credentialsPath))) {
             mkdir(dirname($credentialsPath), 0700, true);
         }
-        if(file_put_contents($credentialsPath, json_encode($accessToken)) === false)
+        if(file_put_contents($credentialsPath, json_encode($accessToken)) === false){
             throw new Exception("Cannot save $credentialsPath");
+        }
         printf('Credentials saved to %s\n', $credentialsPath);
     }
 
@@ -170,8 +172,10 @@ function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
     $response = $driveService->files->export($presentationId, 'application/pdf');
     $content = $response->getBody();
     $pdfPath = './pdf/result.pdf';
-    if(file_put_contents($pdfPath, $content) === false)
+    if(file_put_contents($pdfPath, $content) === false){
         throw new Exception("Cannot save pdf at $pdfPath");
+
+    }
 }
 
 function main(){
