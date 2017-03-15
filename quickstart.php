@@ -64,6 +64,7 @@ function getClient() {
         if(file_put_contents($credentialsPath, json_encode($client->getAccessToken())) === false)
             throw new Exception("Cannot save $credentialsPath");
     }
+
     return $client;
 }
 
@@ -77,6 +78,7 @@ function expandHomeDirectory($path) {
     if (empty($homeDirectory)) {
         $homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
     }
+
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
@@ -96,6 +98,7 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copy_nam
         'name' => $copy_name
     ]);
     $driveResponse = $driveService->files->copy($templatePresentationId, $copy);
+
     return $driveResponse->id;
 }
 
@@ -115,6 +118,7 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     $token = $driveService->getClient()->getAccessToken()['access_token'];
     $endPoint = 'https://www.googleapis.com/drive/v3/files';
     $imageUrl = sprintf('%s/%s?alt=media&access_token=%s', $endPoint, $fileId, $token);
+
     return $imageUrl;
 }
 
