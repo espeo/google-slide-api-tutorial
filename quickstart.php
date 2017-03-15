@@ -41,6 +41,10 @@ function getClient() {
         // Exchange authorization code for an access token.
         $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
 
+        if(isset($accessToken['error'])){
+            throw new InvalidArgumentException("Wrong verification code ({$accessToken['error']} - {$accessToken['error_description']})", 403);
+        }
+
         // Store the credentials to disk.
         if(!file_exists(dirname($credentialsPath))) {
             mkdir(dirname($credentialsPath), 0700, true);
@@ -48,6 +52,7 @@ function getClient() {
         file_put_contents($credentialsPath, json_encode($accessToken));
         printf("Credentials saved to %s\n", $credentialsPath);
     }
+
     $client->setAccessToken($accessToken);
 
     // Refresh the token if it's expired.
