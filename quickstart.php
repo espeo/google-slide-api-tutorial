@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-define('APPLICATION_NAME', 'Espeo Google Slides Generating');
+define('APPLICATION_NAME', 'Espeo Google Slides Generator');
 define('CREDENTIALS_PATH', '~/.credentials/espeo.google-slide-api-tutorial.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 // If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/slides.googleapis.com-php-quickstart.json
+// at ~/.credentials/espeo.google-slide-api-tutorial.json
 define('SCOPES', implode(' ', array(
         Google_Service_Slides::PRESENTATIONS,
         Google_Service_Slides::DRIVE)
@@ -89,14 +89,6 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copy_nam
     return $driveResponse->id;
 }
 
-function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests){
-    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
-        'requests' => $requests
-    ));
-
-    $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
-}
-
 function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null){
 
     $file = new Google_Service_Drive_DriveFile(array(
@@ -116,51 +108,67 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     return $imageUrl;
 }
 
+function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests){
+    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest(array(
+        'requests' => $requests
+    ));
+
+    $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
+}
+
+function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl){
+    $requests = array();
+
+    $requests[] = new Google_Service_Slides_Request(array(
+        'replaceAllText' => array (
+            'containsText' => array(
+                'text' => '{{ product_name }}',
+                'matchCase' =>  true,
+            ),
+            'replaceText' => 'Awesome name'
+        )
+    ));
+
+    $requests[] = new Google_Service_Slides_Request(array(
+        'replaceAllText' => array (
+            'containsText' => array(
+                'text' => '{{ product_description }}',
+                'matchCase' =>  true,
+            ),
+            'replaceText' => 'Some description'
+        )
+    ));
+
+    $requests[] = new Google_Service_Slides_Request(array(
+        'replaceAllShapesWithImage' => array (
+            'containsText' => array(
+                'text' => '{{ image }}',
+                'matchCase' =>  true,
+            ),
+            'imageUrl' => $imageUrl,
+            'replaceMethod' => 'CENTER_INSIDE',
+        )
+    ));
+
+    batchUpdate($slidesService, $presentationId, $requests);
+}
+
 function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
     $response = $driveService->files->export($presentationId, 'application/pdf');
     $content = $response->getBody();
     file_put_contents('./pdf/result.pdf', $content);
 }
 
-$client = getClient();
-$driveService = new Google_Service_Drive($client);
-$slidesService = new Google_Service_Slides($client);
+function main(){
+    $client = getClient();
+    $driveService = new Google_Service_Drive($client);
+    $slidesService = new Google_Service_Slides($client);
 
-$presentationId = clonePresentationWithName($driveService, 'copy_name');
-$imageUrl = uploadImage($driveService, './images/espeo.png');
+    $presentationId = clonePresentationWithName($driveService, 'copy_name');
+    $imageUrl = uploadImage($driveService, './images/espeo.png');
 
-$requests = array();
+    replaceContent($slidesService, $presentationId, $imageUrl);
+    downloadAsPdf($driveService, $presentationId);
+}
 
-$requests[] = new Google_Service_Slides_Request(array(
-    'replaceAllText' => array (
-        'containsText' => array(
-            'text' => '{{ product_name }}',
-            'matchCase' =>  true,
-        ),
-        'replaceText' => 'Awesome name'
-    )
-));
-
-$requests[] = new Google_Service_Slides_Request(array(
-    'replaceAllText' => array (
-        'containsText' => array(
-            'text' => '{{ product_description }}',
-            'matchCase' =>  true,
-        ),
-        'replaceText' => 'Some description'
-    )
-));
-
-$requests[] = new Google_Service_Slides_Request(array(
-    'replaceAllShapesWithImage' => array (
-        'containsText' => array(
-            'text' => '{{ image }}',
-            'matchCase' =>  true,
-        ),
-        'imageUrl' => $imageUrl,
-        'replaceMethod' => 'CENTER_INSIDE',
-    )
-));
-
-batchUpdate($slidesService, $presentationId, $requests);
-downloadAsPdf($driveService, $presentationId);
+main();
