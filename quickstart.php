@@ -4,6 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 define('APPLICATION_NAME', 'Espeo Google Slides Generator');
 define('CREDENTIALS_PATH', '~/.credentials/espeo.google-slide-api-tutorial.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
+define('TEMPLATE_NAME', 'Espeo template');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/espeo.google-slide-api-tutorial.json
 define('SCOPES', implode(' ', array(
@@ -72,7 +73,7 @@ function expandHomeDirectory($path) {
 
 function clonePresentationWithName(Google_Service_Drive $driveService, $copy_name){
     $response = $driveService->files->listFiles(array(
-        'q' => "mimeType='application/vnd.google-apps.presentation' and name='Espeo template'",
+        'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
         'spaces' => 'drive',
         'fields' => 'files(id, name)',
     ));
