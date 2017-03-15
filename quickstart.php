@@ -22,7 +22,8 @@ if (php_sapi_name() !== 'cli') {
  * @return Google_Client the authorized client object
  * @throws Exception
  */
-function getClient() {
+function getClient()
+{
     $client = new Google_Client();
     $client->setApplicationName(APPLICATION_NAME);
     $client->setScopes(SCOPES);
@@ -77,7 +78,8 @@ function getClient() {
  * @param string $path the path to expand.
  * @return string the expanded path.
  */
-function expandHomeDirectory($path) {
+function expandHomeDirectory($path)
+{
     $homeDirectory = getenv('HOME');
     if ($homeDirectory !== false) {
         $homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
@@ -86,7 +88,8 @@ function expandHomeDirectory($path) {
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
-function clonePresentationWithName(Google_Service_Drive $driveService, $copyName){
+function clonePresentationWithName(Google_Service_Drive $driveService, $copyName)
+{
     $response = $driveService->files->listFiles([
         'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
         'spaces' => 'drive',
@@ -106,7 +109,8 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copyName
     return $driveResponse->id;
 }
 
-function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null){
+function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null)
+{
 
     $file = new Google_Service_Drive_DriveFile([
         'name' => $name ? $name : basename($imagePath),
@@ -125,7 +129,8 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     return $imageUrl;
 }
 
-function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests){
+function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests)
+{
     $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
         'requests' => $requests
     ]);
@@ -133,7 +138,8 @@ function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $req
     $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
 }
 
-function requestReplaceText($placeholder, $replacement){
+function requestReplaceText($placeholder, $replacement)
+{
     return new Google_Service_Slides_Request([
         'replaceAllText' => [
             'containsText' => [
@@ -145,7 +151,8 @@ function requestReplaceText($placeholder, $replacement){
     ]);
 }
 
-function requestReplaceShapesWithImage($shapeText, $imageUrl){
+function requestReplaceShapesWithImage($shapeText, $imageUrl)
+{
     return new Google_Service_Slides_Request([
         'replaceAllShapesWithImage' => [
             'containsText' => [
@@ -158,7 +165,8 @@ function requestReplaceShapesWithImage($shapeText, $imageUrl){
     ]);
 }
 
-function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl){
+function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl)
+{
     $requests = [];
 
     $requests[] = requestReplaceText('{{ product_name }}', 'Awesome name');
@@ -168,7 +176,8 @@ function replaceContent(Google_Service_Slides $slidesService, $presentationId, $
     batchUpdate($slidesService, $presentationId, $requests);
 }
 
-function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
+function downloadAsPdf(Google_Service_Drive $driveService, $presentationId)
+{
     $response = $driveService->files->export($presentationId, 'application/pdf');
     $content = $response->getBody();
     $pdfPath = './pdf/result.pdf';
@@ -178,7 +187,8 @@ function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
     }
 }
 
-function main(){
+function main()
+{
     $client = getClient();
     $driveService = new Google_Service_Drive($client);
     $slidesService = new Google_Service_Slides($client);
