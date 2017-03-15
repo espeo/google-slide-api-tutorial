@@ -7,10 +7,10 @@ define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 define('TEMPLATE_NAME', 'Espeo template');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/espeo.google-slide-api-tutorial.json
-define('SCOPES', implode(' ', [
+define('SCOPES', [
         Google_Service_Slides::PRESENTATIONS,
-        Google_Service_Slides::DRIVE ]
-));
+        Google_Service_Slides::DRIVE
+]);
 
 if (php_sapi_name() !== 'cli') {
     throw new Exception('This application must be run on the command line.');
@@ -30,6 +30,8 @@ function getClient() {
     // Load previously authorized credentials from a file.
     $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
     if (file_exists($credentialsPath)) {
+        if (file_get_contents($credentialsPath) === false)
+            throw new Exception("Cannot get file contents!");
         $accessToken = json_decode(file_get_contents($credentialsPath), true);
     } else {
         // Request authorization from the user.
@@ -42,14 +44,15 @@ function getClient() {
         $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
 
         if(isset($accessToken['error'])){
-            throw new InvalidArgumentException("Wrong verification code ({$accessToken['error']} - {$accessToken['error_description']})", 403);
+            throw new InvalidArgumentException("Wrong verification code ({$accessToken['error']} - {$accessToken['error_description']})");
         }
 
         // Store the credentials to disk.
         if(!file_exists(dirname($credentialsPath))) {
             mkdir(dirname($credentialsPath), 0700, true);
         }
-        file_put_contents($credentialsPath, json_encode($accessToken));
+        if(file_put_contents($credentialsPath, json_encode($accessToken)) === false)
+            throw new Exception("Cannot save $credentialsPath");
         printf('Credentials saved to %s\n', $credentialsPath);
     }
 
@@ -58,7 +61,8 @@ function getClient() {
     // Refresh the token if it's expired.
     if ($client->isAccessTokenExpired()) {
         $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-        file_put_contents($credentialsPath, json_encode($client->getAccessToken()));
+        if(file_put_contents($credentialsPath, json_encode($client->getAccessToken())) === false)
+            throw new Exception("Cannot save $credentialsPath");
     }
     return $client;
 }
@@ -160,7 +164,9 @@ function replaceContent(Google_Service_Slides $slidesService, $presentationId, $
 function downloadAsPdf(Google_Service_Drive $driveService, $presentationId){
     $response = $driveService->files->export($presentationId, 'application/pdf');
     $content = $response->getBody();
-    file_put_contents('./pdf/result.pdf', $content);
+    $pdfPath = './pdf/result.pdf';
+    if(file_put_contents($pdfPath, $content) === false)
+        throw new Exception("Cannot save pdf at $pdfPath");
 }
 
 function main(){
