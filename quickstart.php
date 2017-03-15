@@ -93,7 +93,7 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copyName
     if($response->files){
         $templatePresentationId = $response->files[0]->id;
     } else {
-        throw new Exception("Template presentation not found");
+        throw new Exception('Template presentation not found');
     }
 
     $copy = new Google_Service_Drive_DriveFile([
