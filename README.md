@@ -1,7 +1,7 @@
-#Espeo Google Slides Generator (tutorial)
-##Installation
+# Espeo Google Slides Generator (tutorial)
+## Installation
 `php composer.phar install`
-##Define variables explanations
+## Define variables explanations
 * **CREDENTIALS_PATH** - path to file where you store user access tokens
 * **CLIENT_SECRET_PATH** - path where you store credentials downloaded from Google API Console
 * **TEMPLATE_NAME** - the name of existing presentation which you use as a template
