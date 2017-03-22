@@ -88,7 +88,7 @@ function expandHomeDirectory($path)
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
-function clonePresentationWithName(Google_Service_Drive $driveService, $copyName)
+function clonePresentationByName(Google_Service_Drive $driveService, $copyName)
 {
     $response = $driveService->files->listFiles([
         'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
@@ -129,7 +129,7 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     return $imageUrl;
 }
 
-function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests)
+function executeRequests(Google_Service_Slides $slidesService, $presentationId, $requests)
 {
     $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
         'requests' => $requests
@@ -173,7 +173,7 @@ function replaceContent(Google_Service_Slides $slidesService, $presentationId, $
     $requests[] = requestReplaceText('{{ product_description }}', 'Some description');
     $requests[] = requestReplaceShapesWithImage('{{ image }}', $imageUrl);
 
-    batchUpdate($slidesService, $presentationId, $requests);
+    executeRequests($slidesService, $presentationId, $requests);
 }
 
 function downloadAsPdf(Google_Service_Drive $driveService, $presentationId)
@@ -193,7 +193,7 @@ function main()
     $driveService = new Google_Service_Drive($client);
     $slidesService = new Google_Service_Slides($client);
 
-    $presentationId = clonePresentationWithName($driveService, 'copy_name');
+    $presentationId = clonePresentationByName($driveService, 'copy_name');
     $imageUrl = uploadImage($driveService, './images/espeo.png');
 
     replaceContent($slidesService, $presentationId, $imageUrl);
