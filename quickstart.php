@@ -88,6 +88,13 @@ function expandHomeDirectory($path)
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
+/**
+ * Returns the id of cloned presentation
+ * @param Google_Service_Drive $driveService
+ * @param string $copyName the name for cloned presentation
+ * @return string cloned presentation id
+ * @throws Exception
+ */
 function clonePresentationByName(Google_Service_Drive $driveService, $copyName)
 {
     $response = $driveService->files->listFiles([
@@ -109,6 +116,13 @@ function clonePresentationByName(Google_Service_Drive $driveService, $copyName)
     return $driveResponse->id;
 }
 
+/**
+ * Returns and url for uploaded image
+ * @param Google_Service_Drive $driveService
+ * @param string $imagePath path to local file
+ * @param string|null $name new name of image for Google Drive
+ * @return string uploaded image url
+ */
 function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null)
 {
 
@@ -183,7 +197,6 @@ function downloadAsPdf(Google_Service_Drive $driveService, $presentationId)
     $pdfPath = './pdf/result.pdf';
     if(file_put_contents($pdfPath, $content) === false){
         throw new Exception("Cannot save pdf at $pdfPath");
-
     }
 }
 
