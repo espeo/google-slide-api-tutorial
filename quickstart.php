@@ -88,7 +88,14 @@ function expandHomeDirectory($path)
     return str_replace('~', realpath($homeDirectory), $path);
 }
 
-function clonePresentationWithName(Google_Service_Drive $driveService, $copyName)
+/**
+ * Returns the id of cloned presentation
+ * @param Google_Service_Drive $driveService
+ * @param string $copyName the name for cloned presentation
+ * @return string cloned presentation id
+ * @throws Exception
+ */
+function clonePresentationByName(Google_Service_Drive $driveService, $copyName)
 {
     $response = $driveService->files->listFiles([
         'q' => "mimeType='application/vnd.google-apps.presentation' and name='".TEMPLATE_NAME."'",
@@ -109,6 +116,13 @@ function clonePresentationWithName(Google_Service_Drive $driveService, $copyName
     return $driveResponse->id;
 }
 
+/**
+ * Returns and url for uploaded image
+ * @param Google_Service_Drive $driveService
+ * @param string $imagePath path to local file
+ * @param string|null $name new name of image for Google Drive
+ * @return string uploaded image url
+ */
 function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = null)
 {
 
@@ -129,7 +143,7 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     return $imageUrl;
 }
 
-function batchUpdate(Google_Service_Slides $slidesService, $presentationId, $requests)
+function executeRequests(Google_Service_Slides $slidesService, $presentationId, $requests)
 {
     $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
         'requests' => $requests
@@ -173,7 +187,7 @@ function replaceContent(Google_Service_Slides $slidesService, $presentationId, $
     $requests[] = requestReplaceText('{{ product_description }}', 'Some description');
     $requests[] = requestReplaceShapesWithImage('{{ image }}', $imageUrl);
 
-    batchUpdate($slidesService, $presentationId, $requests);
+    executeRequests($slidesService, $presentationId, $requests);
 }
 
 function downloadAsPdf(Google_Service_Drive $driveService, $presentationId)
@@ -183,7 +197,6 @@ function downloadAsPdf(Google_Service_Drive $driveService, $presentationId)
     $pdfPath = './pdf/result.pdf';
     if(file_put_contents($pdfPath, $content) === false){
         throw new Exception("Cannot save pdf at $pdfPath");
-
     }
 }
 
@@ -193,7 +206,7 @@ function main()
     $driveService = new Google_Service_Drive($client);
     $slidesService = new Google_Service_Slides($client);
 
-    $presentationId = clonePresentationWithName($driveService, 'copy_name');
+    $presentationId = clonePresentationByName($driveService, 'copy_name');
     $imageUrl = uploadImage($driveService, './images/espeo.png');
 
     replaceContent($slidesService, $presentationId, $imageUrl);

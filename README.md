@@ -1,4 +1,9 @@
 # Espeo Google Slides Generator (tutorial)
+## Requirements
+```
+PHP 5.4+
+composer //included in project
+```
 ## Installation
 `php composer.phar install`
 ## Define variables explanations
