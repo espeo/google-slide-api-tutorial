@@ -40,7 +40,7 @@ function getClient()
     } else {
         // Request authorization from the user.
         $authUrl = $client->createAuthUrl();
-        printf('Open the following link in your browser:\n%s\n', $authUrl);
+        printf("Open the following link in your browser:\n%s\n", $authUrl);
         print 'Enter verification code: ';
         $authCode = trim(fgets(STDIN));
 
@@ -58,7 +58,7 @@ function getClient()
         if(file_put_contents($credentialsPath, json_encode($accessToken)) === false){
             throw new Exception("Cannot save $credentialsPath");
         }
-        printf('Credentials saved to %s\n', $credentialsPath);
+        printf("Credentials saved to %s\n", $credentialsPath);
     }
 
     $client->setAccessToken($accessToken);
