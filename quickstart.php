@@ -143,15 +143,6 @@ function uploadImage(Google_Service_Drive $driveService, $imagePath, $name = nul
     return $imageUrl;
 }
 
-function executeRequests(Google_Service_Slides $slidesService, $presentationId, $requests)
-{
-    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
-        'requests' => $requests
-    ]);
-
-    $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
-}
-
 function requestReplaceText($placeholder, $replacement)
 {
     return new Google_Service_Slides_Request([
@@ -177,6 +168,15 @@ function requestReplaceShapesWithImage($shapeText, $imageUrl)
             'replaceMethod' => 'CENTER_INSIDE',
         ]
     ]);
+}
+
+function executeRequests(Google_Service_Slides $slidesService, $presentationId, $requests)
+{
+    $batchUpdateRequest = new Google_Service_Slides_BatchUpdatePresentationRequest([
+        'requests' => $requests
+    ]);
+
+    $slidesService->presentations->batchUpdate($presentationId, $batchUpdateRequest);
 }
 
 function replaceContent(Google_Service_Slides $slidesService, $presentationId, $imageUrl)
